@@ -1,11 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
-  const [showVideo, setShowVideo] = useState(false)
-  const videoSrc = "/wowo.mp4"
+  const [showAnim, setShowAnim] = useState(false)
 
-  // Styles kept inline for simplicity; kamu bisa pindahkan ke App.css kalau mau
+  // PRELOAD GIF SEBELUM TOMBOL DIKLIK — memastikan benar-benar fully loaded
+  const [gifReady, setGifReady] = useState(false)
+  const gifSrc = '/wowo_opt.gif' // pastikan file ada di public/wowo_opt.gif
+
+  useEffect(() => {
+    const img = new Image()
+    img.src = gifSrc
+    img.onload = () => {
+      setGifReady(true)
+    }
+    // optional: cleanup (tidak wajib untuk Image but good practice)
+    return () => {
+      img.onload = null
+    }
+  }, [])
+
+  // Styles inline untuk kemudahan; kamu bisa pindahkan ke App.css
   const pageStyle = {
     padding: '2rem',
     fontFamily: 'sans-serif',
@@ -16,23 +31,23 @@ function App() {
 
   const btnStyle = { padding: '0.6rem 1rem', fontSize: '1rem' }
 
-  const videoWrapperStyle = {
+  const mediaWrapperStyle = {
     marginTop: '1.5rem',
-    // buat kontainer yang membatasi ukuran video agar tidak melebihi layar
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
   }
 
-  const videoStyle = {
-    width: '100%',            // ambil lebar penuh dari kontainer (tapi tidak melebihi maxWidth)
-    maxWidth: '600px',       // batas lebar di desktop
-    maxHeight: '80vh',       // pastikan tidak melebihi 80% tinggi viewport
+  const imgStyle = {
+    width: '100%',
+    maxWidth: '400px',
+    maxHeight: '60vh',
     height: 'auto',
     borderRadius: '8px',
-    objectFit: 'contain',    // agar aspect ratio tetap terjaga dan seluruh frame terlihat
+    objectFit: 'contain',
     boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
+    display: 'block',
   }
 
   const closeBtnStyle = { marginTop: '0.5rem', padding: '0.5rem 1rem' }
@@ -41,24 +56,22 @@ function App() {
     <div style={pageStyle}>
       <h1 style={{ marginBottom: '1rem' }}>Pengaduan Pemerintah</h1>
 
-      <button onClick={() => setShowVideo(true)} style={btnStyle}>
-        Lanjutkan
+      <button
+        onClick={() => gifReady && setShowAnim(true)}
+        style={btnStyle}
+        disabled={!gifReady}
+      >
+        {gifReady ? 'Lanjutkan' : 'Memuat...'}
       </button>
 
-      {showVideo && (
-        <div style={videoWrapperStyle}>
+      {showAnim && (
+        <div style={mediaWrapperStyle}>
           <div style={{ width: '80%', maxWidth: '400px' }}>
-            <video
-              src={videoSrc}
-              controls
-              autoPlay
-              muted
-              playsInline
-              style={videoStyle}
-            />
+            {/* Tampilkan GIF yang sudah di-preload */}
+            <img src={gifSrc} alt="animasi" style={imgStyle} />
 
             <div style={{ textAlign: 'center' }}>
-              <button onClick={() => setShowVideo(false)} style={closeBtnStyle}>
+              <button onClick={() => setShowAnim(false)} style={closeBtnStyle}>
                 Hidup Jokowi
               </button>
             </div>
